@@ -360,7 +360,7 @@ void SetCurrentWindow(const sf::Window& window)
     ImGui::SetCurrentContext(s_currWindowCtx->imContext);
 }
 
-void ProcessEvent(const sf::Window& window, const sf::Event& event)
+void ProcessEvent(const sf::Window& window, const std::optional<sf::Event>& event)
 {
     SetCurrentWindow(window);
     assert(s_currWindowCtx && "No current window is set - forgot to call ImGui::SFML::Init?");
@@ -368,17 +368,17 @@ void ProcessEvent(const sf::Window& window, const sf::Event& event)
 
     if (s_currWindowCtx->windowHasFocus)
     {
-        if (const auto* resized = event.getIf<sf::Event::Resized>())
+        if (const auto* resized = event->getIf<sf::Event::Resized>())
         {
             io.DisplaySize = toImVec2(sf::Vector2f(resized->size));
         }
-        else if (const auto* mouseMoved = event.getIf<sf::Event::MouseMoved>())
+        else if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>())
         {
             const auto [x, y] = sf::Vector2f(mouseMoved->position);
             io.AddMousePosEvent(x, y);
             s_currWindowCtx->mouseMoved = true;
         }
-        else if (const auto* mouseButtonPressed = event.getIf<sf::Event::MouseButtonPressed>())
+        else if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
         {
             const int button = static_cast<int>(mouseButtonPressed->button);
             if (button >= 0 && button < 3)
@@ -387,24 +387,24 @@ void ProcessEvent(const sf::Window& window, const sf::Event& event)
                 io.AddMouseButtonEvent(button, true);
             }
         }
-        else if (const auto* mouseButtonReleased = event.getIf<sf::Event::MouseButtonReleased>())
+        else if (const auto* mouseButtonReleased = event->getIf<sf::Event::MouseButtonReleased>())
         {
             const int button = static_cast<int>(mouseButtonReleased->button);
             if (button >= 0 && button < 3)
                 io.AddMouseButtonEvent(button, false);
         }
-        else if (const auto* touchBegan = event.getIf<sf::Event::TouchBegan>())
+        else if (const auto* touchBegan = event->getIf<sf::Event::TouchBegan>())
         {
             s_currWindowCtx->mouseMoved = false;
             const unsigned int button   = touchBegan->finger;
             if (button < 3)
                 s_currWindowCtx->touchDown[touchBegan->finger] = true;
         }
-        else if (event.is<sf::Event::TouchEnded>())
+        else if (event->is<sf::Event::TouchEnded>())
         {
             s_currWindowCtx->mouseMoved = false;
         }
-        else if (const auto* mouseWheelScrolled = event.getIf<sf::Event::MouseWheelScrolled>())
+        else if (const auto* mouseWheelScrolled = event->getIf<sf::Event::MouseWheelScrolled>())
         {
             if (mouseWheelScrolled->wheel == sf::Mouse::Wheel::Vertical ||
                 (mouseWheelScrolled->wheel == sf::Mouse::Wheel::Horizontal && io.KeyShift))
@@ -437,26 +437,26 @@ void ProcessEvent(const sf::Window& window, const sf::Event& event)
             io.AddKeyEvent(key, down);
             io.SetKeyEventNativeData(key, static_cast<int>(keyChanged.code), -1);
         };
-        if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
+        if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
         {
             handleKeyChanged(*keyPressed, true);
         }
-        else if (const auto* keyReleased = event.getIf<sf::Event::KeyReleased>())
+        else if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>())
         {
             handleKeyChanged(*keyReleased, false);
         }
-        else if (const auto* textEntered = event.getIf<sf::Event::TextEntered>())
+        else if (const auto* textEntered = event->getIf<sf::Event::TextEntered>())
         {
             // Don't handle the event for unprintable characters
             if (textEntered->unicode >= ' ' && textEntered->unicode != 127)
                 io.AddInputCharacter(textEntered->unicode);
         }
-        else if (const auto* joystickConnected = event.getIf<sf::Event::JoystickConnected>())
+        else if (const auto* joystickConnected = event->getIf<sf::Event::JoystickConnected>())
         {
             if (s_currWindowCtx->joystickId == NULL_JOYSTICK_ID)
                 s_currWindowCtx->joystickId = joystickConnected->joystickId;
         }
-        else if (const auto* joystickDisconnected = event.getIf<sf::Event::JoystickDisconnected>())
+        else if (const auto* joystickDisconnected = event->getIf<sf::Event::JoystickDisconnected>())
         {
             if (s_currWindowCtx->joystickId == joystickDisconnected->joystickId)
                 // used gamepad was disconnected
@@ -464,19 +464,19 @@ void ProcessEvent(const sf::Window& window, const sf::Event& event)
         }
     }
 
-    if (event.is<sf::Event::FocusLost>())
+    if (event->is<sf::Event::FocusLost>())
     {
         io.AddFocusEvent(false);
         s_currWindowCtx->windowHasFocus = false;
     }
-    if (event.is<sf::Event::FocusGained>())
+    if (event->is<sf::Event::FocusGained>())
     {
         io.AddFocusEvent(true);
         s_currWindowCtx->windowHasFocus = true;
     }
 }
 
-void Update(sf::RenderWindow& window, sf::Time dt)
+void Update(sf::RenderWindow& window, sf::Time dt)  
 {
     Update(window, window, dt);
 }

@@ -31,7 +31,7 @@ namespace SFML
 [[nodiscard]] IMGUI_SFML_API bool Init(sf::Window& window, const sf::Vector2f& displaySize, bool loadDefaultFont = true);
 
 IMGUI_SFML_API void SetCurrentWindow(const sf::Window& window);
-IMGUI_SFML_API void ProcessEvent(const sf::Window& window, const sf::Event& event);
+IMGUI_SFML_API void ProcessEvent(const sf::Window& window, const std::optional<sf::Event>& event);
 
 IMGUI_SFML_API void Update(sf::RenderWindow& window, sf::Time dt);
 IMGUI_SFML_API void Update(sf::Window& window, sf::RenderTarget& target, sf::Time dt);
